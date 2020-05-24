@@ -1,3 +1,6 @@
+extern crate chrono;
+use chrono::prelude::*;
+
 use std::fmt;
 
 pub struct SearchResult {
@@ -7,12 +10,12 @@ pub struct SearchResult {
   pub grand_parent_title: String,
   pub summary: String,
   pub duration: i32,
-  pub channel_id: i32,
-  pub channel_human_id: i32,
+  pub channel_id: String,
+  pub channel_human_id: String,
   pub channel_callsign: String,
   pub channel_title: String,
-  pub begins_at: i32,
-  pub ends_at: i32,
+  pub begins_at: String,
+  pub ends_at: String,
   pub genre: Vec<String>,
 }
 
@@ -25,12 +28,12 @@ impl SearchResult {
       grand_parent_title: String::from(""),
       summary: String::from(""),
       duration: 0,
-      channel_id: 0,
-      channel_human_id: 0,
+      channel_id: String::from(""),
+      channel_human_id: String::from(""),
       channel_callsign: String::from(""),
       channel_title: String::from(""),
-      begins_at: 0,
-      ends_at: 0,
+      begins_at: String::from(""),
+      ends_at: String::from(""),
       genre: Vec::new(),
     }
   }
@@ -43,11 +46,17 @@ impl fmt::Display for SearchResult {
       "Title: {}
       Parent Title: {}
       Grand Parent Title: {}
-      Summary: {}",
+      Summary: {}
+      Channel: {}
+      Begins At: {}
+      Ends At: {}",
       self.title,
       self.parent_title,
       self.grand_parent_title,
-      self.summary
+      self.summary,
+      self.channel_title,
+      Local.timestamp(self.begins_at.parse().unwrap(), 0),
+      Local.timestamp(self.ends_at.parse().unwrap(), 0),
     )
   }
 }

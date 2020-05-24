@@ -32,6 +32,7 @@ pub fn parse(content: Cursor<String>, query: &str) -> Result<Vec::<SearchResult>
             }
           }
         } else if name.local_name == "Media" && in_video_block {
+          extract_media_attrs(&attributes, &mut search_result);
           // TODO Add media metadata to the result
         } else if name.local_name == "Genre" && in_video_block {
           // TODO Add genre metadata to the result
@@ -71,4 +72,17 @@ fn extract_attrs(attributes: &Vec<OwnedAttribute>, search_result: &mut SearchRes
   search_result.parent_title = all_attrs.get("parentTitle").unwrap().to_string();
   search_result.grand_parent_title = all_attrs.get("grandparentTitle").unwrap().to_string();
   search_result.summary = all_attrs.get("summary").unwrap().to_string();
+}
+
+fn extract_media_attrs(attributes: &Vec<OwnedAttribute>, search_result: &mut SearchResult) {
+  let mut all_attrs = HashMap::new();
+  for attr in attributes {
+    all_attrs.insert(attr.name.local_name.clone(), attr.value.clone());
+  }
+
+  // TODO handle unwraps better
+  search_result.channel_human_id = all_attrs.get("channelIdentifier").unwrap().to_string();
+  search_result.channel_title = all_attrs.get("channelTitle").unwrap().to_string();
+  search_result.begins_at = all_attrs.get("beginsAt").unwrap().to_string();
+  search_result.ends_at = all_attrs.get("endsAt").unwrap().to_string();
 }
