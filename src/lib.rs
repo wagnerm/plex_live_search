@@ -16,6 +16,6 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 fn search(config: Config) -> Result<(), Box<dyn Error>> {
     let plex = plex::Plex::new();
     let data = plex.retrieve_guide_data().unwrap();
-    parse(data, &config.query)?;
+    parse(data, &config)?;
     Ok(())
 }
