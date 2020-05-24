@@ -24,12 +24,12 @@ $ cargo build --release
 
 $ ./target/release/plex_live_search --ignore-case "the match"
 Title: Capital One's The Match: Champions for Charity
-      Parent Title: Season 2020
-      Grand Parent Title: Capital One's The Match: Champions for Charity
-      Summary: Tiger Woods and Peyton Manning face Phil Mickelson and Tom Brady in a charity team golf match from Medalist GC in Hobe Sound, Fla. COVID-19 beneficiaries include Direct Relief, the American Red Cross; Save Small Business; and the ALL IN Challenge.
-      Channel: 741 HLNHD (HLN HDTV)
-      Begins At: 2020-05-24 13:00:00 -06:00
-      Ends At: 2020-05-24 18:00:00 -06:00
+Parent Title: Season 2020
+Grand Parent Title: Capital One's The Match: Champions for Charity
+Summary: Tiger Woods and Peyton Manning face Phil Mickelson and Tom Brady in a charity team golf match from Medalist GC in Hobe Sound, Fla. COVID-19 beneficiaries include Direct Relief, the American Red Cross; Save Small Business; and the ALL IN Challenge.
+Channel: 741 HLNHD (HLN HDTV)
+Begins At: 2020-05-24 13:00:00 -06:00
+Ends At: 2020-05-24 18:00:00 -06:00
 ```
 
 Docker:
@@ -38,10 +38,10 @@ Docker:
 
 ./script/run --ignore-case "the match"
 Title: Capital One's The Match: Champions for Charity
-      Parent Title: Season 2020
-      Grand Parent Title: Capital One's The Match: Champions for Charity
-      Summary: Tiger Woods and Peyton Manning face Phil Mickelson and Tom Brady in a charity team golf match from Medalist GC in Hobe Sound, Fla. COVID-19 beneficiaries include Direct Relief, the American Red Cross; Save Small Business; and the ALL IN Challenge.
-      Channel: 741 HLNHD (HLN HDTV)
-      Begins At: 2020-05-24 13:00:00 -06:00
-      Ends At: 2020-05-24 18:00:00 -06:00
+Parent Title: Season 2020
+Grand Parent Title: Capital One's The Match: Champions for Charity
+Summary: Tiger Woods and Peyton Manning face Phil Mickelson and Tom Brady in a charity team golf match from Medalist GC in Hobe Sound, Fla. COVID-19 beneficiaries include Direct Relief, the American Red Cross; Save Small Business; and the ALL IN Challenge.
+Channel: 741 HLNHD (HLN HDTV)
+Begins At: 2020-05-24 13:00:00 -06:00
+Ends At: 2020-05-24 18:00:00 -06:00
 ```

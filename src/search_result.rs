@@ -44,12 +44,12 @@ impl fmt::Display for SearchResult {
         write!(
             formatter,
             "Title: {}
-      Parent Title: {}
-      Grand Parent Title: {}
-      Summary: {}
-      Channel: {}
-      Begins At: {}
-      Ends At: {}",
+Parent Title: {}
+Grand Parent Title: {}
+Summary: {}
+Channel: {}
+Begins At: {}
+Ends At: {}\n",
             self.title,
             self.parent_title,
             self.grand_parent_title,
