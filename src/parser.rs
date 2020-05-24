@@ -1,8 +1,6 @@
 extern crate xml;
 
-use std::env;
 use std::error::Error;
-use std::fmt;
 use std::io::Cursor;
 use std::collections::HashMap;
 
@@ -12,11 +10,10 @@ use xml::attribute::OwnedAttribute;
 use super::search_result::SearchResult;
 
 pub fn parse(content: Cursor<String>, query: &str) -> Result<Vec::<SearchResult>, Box<dyn Error>> {
-  let mut search_results = Vec::<SearchResult>::new();
+  let search_results = Vec::<SearchResult>::new();
   let parser = EventReader::new(content);
 
   let mut in_video_block = false;
-  let mut in_media_block = false;
   let mut is_match = false;
 
   let mut search_result = SearchResult::new();
@@ -46,8 +43,6 @@ pub fn parse(content: Cursor<String>, query: &str) -> Result<Vec::<SearchResult>
             println!("{}", search_result);
             search_result = SearchResult::new();
           }
-        } else if name.local_name == "Media" {
-          in_media_block = false;
         }
       }
       Err(e) => {

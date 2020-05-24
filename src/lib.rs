@@ -3,22 +3,15 @@ extern crate xml;
 
 use std::env;
 use std::error::Error;
-use std::fmt;
-use std::io;
-use std::collections::HashMap;
-
-use xml::reader::{EventReader, XmlEvent};
-use xml::attribute::OwnedAttribute;
 
 pub mod search_result;
 pub mod parser;
 pub mod plex;
 
-use search_result::SearchResult;
 use parser::parse;
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-  search(config);
+  search(config)?;
   Ok(())
 }
 
@@ -42,6 +35,6 @@ impl Config {
 fn search(config: Config) -> Result<(), Box<dyn Error>> {
   let plex = plex::Plex::new();
   let data = plex.retrieve_guide_data().unwrap();
-  parse(data, &config.query);
+  parse(data, &config.query)?;
   Ok(())
 }
