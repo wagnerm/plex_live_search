@@ -7,9 +7,13 @@ use std::io::Cursor;
 use xml::attribute::OwnedAttribute;
 use xml::reader::{EventReader, XmlEvent};
 
+use super::config::Config;
 use super::search_result::SearchResult;
 
-pub fn parse(content: Cursor<String>, query: &str) -> Result<Vec<SearchResult>, Box<dyn Error>> {
+pub fn parse(
+    content: Cursor<String>,
+    config: &Config,
+) -> Result<Vec<SearchResult>, Box<dyn Error>> {
     let search_results = Vec::<SearchResult>::new();
     let parser = EventReader::new(content);
 
@@ -17,6 +21,12 @@ pub fn parse(content: Cursor<String>, query: &str) -> Result<Vec<SearchResult>, 
     let mut is_match = false;
 
     let mut search_result = SearchResult::new();
+
+    let query = match config.ignore_case {
+        true => config.query.to_lowercase(),
+        false => config.query.clone(),
+    };
+
     for e in parser {
         match e {
             Ok(XmlEvent::StartElement {
@@ -24,9 +34,14 @@ pub fn parse(content: Cursor<String>, query: &str) -> Result<Vec<SearchResult>, 
             }) => {
                 if name.local_name == "Video" {
                     for attr in &attributes {
-                        if attr.value.contains(query) {
-                            in_video_block = true;
+                        if config.ignore_case && attr.value.to_lowercase().contains(&query) {
                             is_match = true;
+                        } else if attr.value.contains(&query) {
+                            is_match = true;
+                        }
+
+                        if is_match {
+                            in_video_block = true;
                             extract_attrs(&attributes, &mut search_result);
                         }
                     }
