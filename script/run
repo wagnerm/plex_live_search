@@ -1,0 +1,12 @@
+#!/bin/bash
+
+root_dir="$(cd $(dirname $0)/../ && pwd)"
+
+"$root_dir/script/build"
+
+docker-compose run \
+  --rm \
+  -e PLEX_TOKEN \
+  -e PLEX_HOSTNAME \
+  app \
+  "$@"

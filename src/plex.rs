@@ -12,7 +12,7 @@ pub struct Plex {
     plex_hostname: String,
     plex_port: String,
     guide_data_cache: String,
-    disable_guide_data_cache: bool,
+    enable_guide_data_cache: bool,
 }
 
 impl Plex {
@@ -22,14 +22,14 @@ impl Plex {
         let plex_port = env::var("PLEX_PORT").unwrap_or(String::from("32400"));
         let guide_data_cache = env::var("PLEX_GUIDE_DATA_CACHE")
             .unwrap_or(String::from("/var/tmp/plex_guide_data_cache"));
-        let disable_guide_data_cache = env::var("PLEX_DISABLE_GUIDE_DATA_CACHE").is_ok();
+        let enable_guide_data_cache = env::var("PLEX_ENABLE_GUIDE_DATA_CACHE").is_ok();
 
         Plex {
             plex_token,
             plex_hostname,
             plex_port,
             guide_data_cache,
-            disable_guide_data_cache,
+            enable_guide_data_cache,
         }
     }
 
@@ -61,7 +61,7 @@ impl Plex {
     }
 
     pub fn retrieve_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
-        if !self.disable_guide_data_cache {
+        if self.enable_guide_data_cache {
             let content = self.read_guide_cache().unwrap();
             Ok(Cursor::new(content))
         } else {

@@ -16,4 +16,4 @@ COPY . ./
 RUN cargo build --release && \
     mv target/release/plex_live_search /usr/local/bin/
 
-ENTRYPOINT /usr/bin/bin/plex_live_search
+ENTRYPOINT ["/usr/local/bin/plex_live_search"]
