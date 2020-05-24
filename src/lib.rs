@@ -41,7 +41,7 @@ impl Config {
 
 fn search(config: Config) -> Result<(), Box<dyn Error>> {
   let plex = plex::Plex::new();
-  let response = plex.search_live_guide().unwrap();
-  parse(response, &config.query);
+  let data = plex.retrieve_guide_data().unwrap();
+  parse(data, &config.query);
   Ok(())
 }
