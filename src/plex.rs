@@ -63,7 +63,7 @@ impl Plex {
         }
     }
 
-    fn get_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
+    fn guide_request_url(&self) -> String {
         // TODO more sections
         // section 3 == sports
         // section 2 == shows
@@ -73,26 +73,49 @@ impl Plex {
         // 4 for video metadata, media metadata, and genre.
         let media_type = "type=4";
 
-        println!("Requesting...");
-        let request_url = format!(
-        "https://{plex_hostname}:{plex_port}/{request_path}?{media_type}&X-Plex-Token={plex_token}",
-        plex_hostname = self.plex_hostname,
-        plex_port = self.plex_port,
-        plex_token = self.plex_token,
-        request_path = request_path,
-        media_type = media_type,
-    );
+        format!(
+            "https://{plex_hostname}:{plex_port}/{request_path}?{media_type}&X-Plex-Token={plex_token}",
+            plex_hostname = self.plex_hostname,
+            plex_port = self.plex_port,
+            plex_token = self.plex_token,
+            request_path = request_path,
+            media_type = media_type,
+        )
+    }
 
+    fn get_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
+        let request_url = &self.guide_request_url();
+        println!("Requesting...");
         let response = reqwest::blocking::Client::builder()
             .danger_accept_invalid_certs(true)
             .build()
             .unwrap()
-            .get(&request_url)
+            .get(request_url)
             .send()
             .unwrap();
 
         let content = Cursor::new(response.text().unwrap());
 
         Ok(content)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn plex_url() {
+        let plex = Plex::new(
+            String::from("1234"),
+            String::from("plexbox"),
+            String::from("5678"),
+            String::from("/fake_path"),
+            false,
+        );
+        assert_eq!(
+            "https://plexbox:5678/tv.plex.providers.epg.cloud:2/sections/3/all?type=4&X-Plex-Token=1234",
+            plex.guide_request_url()
+        );
     }
 }
