@@ -1,6 +1,5 @@
 extern crate reqwest;
 
-use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
@@ -16,14 +15,7 @@ pub struct Plex {
 }
 
 impl Plex {
-    pub fn new() -> Plex {
-        let plex_token = env::var("PLEX_TOKEN").expect("You must set PLEX_TOKEN");
-        let plex_hostname = env::var("PLEX_HOSTNAME").expect("You must set PLEX_HOSTNAME");
-        let plex_port = env::var("PLEX_PORT").unwrap_or(String::from("32400"));
-        let guide_data_cache = env::var("PLEX_GUIDE_DATA_CACHE")
-            .unwrap_or(String::from("/var/tmp/plex_guide_data_cache"));
-        let enable_guide_data_cache = env::var("PLEX_ENABLE_GUIDE_DATA_CACHE").is_ok();
-
+    pub fn new(plex_token: String, plex_hostname: String, plex_port: String, guide_data_cache: String, enable_guide_data_cache: bool) -> Plex {
         Plex {
             plex_token,
             plex_hostname,

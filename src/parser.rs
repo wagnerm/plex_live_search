@@ -7,12 +7,12 @@ use std::io::Cursor;
 use xml::attribute::OwnedAttribute;
 use xml::reader::{EventReader, XmlEvent};
 
-use super::config::Config;
 use super::search_result::SearchResult;
 
 pub fn parse(
     content: Cursor<String>,
-    config: &Config,
+    query: String,
+    ignore_case: bool,
 ) -> Result<Vec<SearchResult>, Box<dyn Error>> {
     let search_results = Vec::<SearchResult>::new();
     let parser = EventReader::new(content);
@@ -22,9 +22,9 @@ pub fn parse(
 
     let mut search_result = SearchResult::new();
 
-    let query = match config.ignore_case {
-        true => config.query.to_lowercase(),
-        false => config.query.clone(),
+    let query = match ignore_case {
+        true => query.to_lowercase(),
+        false => query.clone(),
     };
 
     for e in parser {
@@ -34,7 +34,7 @@ pub fn parse(
             }) => {
                 if name.local_name == "Video" {
                     for attr in &attributes {
-                        if config.ignore_case && attr.value.to_lowercase().contains(&query) {
+                        if ignore_case && attr.value.to_lowercase().contains(&query) {
                             is_match = true;
                         } else if attr.value.contains(&query) {
                             is_match = true;
