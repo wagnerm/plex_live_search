@@ -7,7 +7,7 @@ fn main() {
     let config = Config::from_args();
 
     if let Err(e) = plex_live_search::run(config) {
-        eprintln!("Application error {}", e);
+        eprintln!("{}", e);
         process::exit(1);
     }
 }
