@@ -15,19 +15,25 @@ pub struct Plex<'a, R: Requester> {
 pub struct PlexRequester {}
 
 pub trait Requester {
-    fn get(&self, url: &String) -> Result<String, reqwest::Error>;
+    fn get(&self, url: &String) -> Result<String, Box<dyn Error>>;
 }
 
 impl Requester for PlexRequester {
-    fn get(&self, url: &String) -> Result<String, reqwest::Error> {
+    fn get(&self, url: &String) -> Result<String, Box<dyn Error>> {
         let result = reqwest::blocking::Client::builder()
             .danger_accept_invalid_certs(true)
             .build()
             .unwrap()
             .get(url)
-            .send()?;
+            .send();
 
-        result.text()
+        match result {
+            Ok(r) => match r.text() {
+                Ok(t) => return Ok(t),
+                Err(e) => return Err(Box::new(e)),
+            },
+            Err(e) => Err(Box::new(e)),
+        }
     }
 }
 
@@ -77,7 +83,7 @@ where
         println!("Requesting...");
 
         let request_url = self.guide_request_url();
-        let text = &self.requester.get(&request_url).unwrap();
+        let text = &self.requester.get(&request_url)?;
         let content = Cursor::new(text.clone());
 
         Ok(content)
@@ -87,6 +93,60 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fmt;
+
+    struct MockPlexRequester {
+        response_text: String,
+    }
+
+    impl MockPlexRequester {
+        fn new(response_text: String) -> MockPlexRequester {
+            MockPlexRequester {
+                response_text: response_text,
+            }
+        }
+    }
+
+    impl Requester for MockPlexRequester {
+        fn get(&self, url: &String) -> Result<String, Box<dyn Error>> {
+            Ok(self.response_text.clone())
+        }
+    }
+
+    impl fmt::Display for PlexError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "Some genereic request error")
+        }
+    }
+
+    #[derive(Debug)]
+    struct PlexError {
+        message: String,
+    }
+
+    impl Error for PlexError {}
+
+    trait DoStuff {
+        fn get_message() -> String;
+    }
+
+    struct MockPlexRequesterWithError {
+        error: String,
+    }
+
+    impl<'a> MockPlexRequesterWithError {
+        fn new(error: String) -> MockPlexRequesterWithError {
+            MockPlexRequesterWithError { error: error }
+        }
+    }
+
+    impl Requester for MockPlexRequesterWithError {
+        fn get(&self, url: &String) -> Result<String, Box<dyn Error>> {
+            Err(Box::new(PlexError {
+                message: self.error.clone(),
+            }))
+        }
+    }
 
     #[test]
     fn test_plex_url() {
@@ -103,24 +163,6 @@ mod tests {
             "https://plexbox:5678/tv.plex.providers.epg.cloud:2/sections/3/all?type=4&X-Plex-Token=1234",
             plex.guide_request_url()
         );
-    }
-
-    struct MockPlexRequester {
-        response_text: String,
-    }
-
-    impl MockPlexRequester {
-        fn new(response_text: String) -> MockPlexRequester {
-            MockPlexRequester {
-                response_text: response_text,
-            }
-        }
-    }
-
-    impl Requester for MockPlexRequester {
-        fn get(&self, url: &String) -> Result<String, reqwest::Error> {
-            Ok(self.response_text.clone())
-        }
     }
 
     #[test]
@@ -153,5 +195,22 @@ mod tests {
         let content = result.unwrap();
         let text_ref = content.get_ref();
         assert_eq!(text_ref, "Hello World! This is a fake response!");
+    }
+
+    #[test]
+    fn test_get_guide_data_error() {
+        let mock_plex_requester_error =
+            MockPlexRequesterWithError::new(String::from("Shit broke yo"));
+        let plex = Plex::new(
+            &mock_plex_requester_error,
+            String::from("1234"),
+            String::from("plexbox"),
+            String::from("5678"),
+            String::from("/fake_path"),
+            false,
+        );
+
+        let result = plex.get_guide_data();
+        assert!(result.is_err());
     }
 }

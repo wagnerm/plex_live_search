@@ -23,7 +23,7 @@ fn search(config: Config) -> Result<(), Box<dyn Error>> {
         config.plex_guide_data_cache,
         config.plex_enable_guide_data_cache,
     );
-    let data = plex.get_guide_data().unwrap();
+    let data = plex.get_guide_data()?;
     parse(data, config.query, config.ignore_case)?;
     Ok(())
 }
