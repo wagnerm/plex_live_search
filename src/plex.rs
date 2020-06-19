@@ -32,16 +32,16 @@ impl Requester for PlexRequester {
 }
 
 impl<'a, R> Plex<'a, R>
-  where
-    R: Requester
-  {
+where
+    R: Requester,
+{
     pub fn new(
         requester: &R,
         plex_token: String,
         plex_hostname: String,
         plex_port: String,
         guide_data_cache: String,
-        enable_guide_data_cache: bool
+        enable_guide_data_cache: bool,
     ) -> Plex<R> {
         Plex {
             requester,
@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     fn test_plex_url() {
-        let plex_requester = PlexRequester{};
+        let plex_requester = PlexRequester {};
         let plex = Plex::new(
             &plex_requester,
             String::from("1234"),
@@ -111,23 +111,21 @@ mod tests {
 
     impl MockPlexRequester {
         fn new(response_text: String) -> MockPlexRequester {
-            MockPlexRequester{
+            MockPlexRequester {
                 response_text: response_text,
             }
         }
     }
 
-    impl Requester for  MockPlexRequester {
-        fn get(&self, url: &String) ->  Result<String, reqwest::Error> {
+    impl Requester for MockPlexRequester {
+        fn get(&self, url: &String) -> Result<String, reqwest::Error> {
             Ok(self.response_text.clone())
         }
     }
 
     #[test]
     fn test_get_returns_response() {
-        let mock_plex_requester = MockPlexRequester::new(
-            String::from("Hello World!"),
-        );
+        let mock_plex_requester = MockPlexRequester::new(String::from("Hello World!"));
 
         let result = mock_plex_requester.get(&String::from("http://plexbox.fake.invalid"));
         assert!(result.is_ok());
@@ -136,9 +134,8 @@ mod tests {
 
     #[test]
     fn test_get_guide_data_creates_cursor() {
-        let mock_plex_requester = MockPlexRequester::new(
-            String::from("Hello World! This is a fake response!"),
-        );
+        let mock_plex_requester =
+            MockPlexRequester::new(String::from("Hello World! This is a fake response!"));
 
         let plex = Plex::new(
             &mock_plex_requester,
