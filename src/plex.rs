@@ -1,10 +1,7 @@
 extern crate reqwest;
 
 use std::error::Error;
-use std::fs::File;
-use std::io::prelude::*;
 use std::io::Cursor;
-use std::path::Path;
 
 pub struct Plex {
     plex_token: String,
@@ -39,44 +36,6 @@ impl Plex {
             plex_port,
             guide_data_cache,
             enable_guide_data_cache,
-        }
-    }
-
-    fn guide_cache_exists(&self) -> bool {
-        Path::new(&self.guide_data_cache).exists()
-    }
-
-    fn read_guide_cache(&self) -> Result<String, Box<dyn Error>> {
-        let path = Path::new(&self.guide_data_cache);
-        let mut contents = String::new();
-
-        if self.guide_cache_exists() {
-            let mut file = File::open(&path)?;
-            file.read_to_string(&mut contents)?;
-        }
-
-        Ok(contents)
-    }
-
-    fn write_guide_data_cache(&self, content: Cursor<String>) -> std::io::Result<()> {
-        let path = Path::new(&self.guide_data_cache);
-
-        let mut file = File::create(&path)?;
-
-        file.write_all(content.get_ref().as_bytes())?;
-        file.sync_all()?;
-
-        Ok(())
-    }
-
-    pub fn retrieve_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
-        if self.enable_guide_data_cache {
-            let content = self.read_guide_cache().unwrap();
-            Ok(Cursor::new(content))
-        } else {
-            let content = self.get_guide_data()?;
-            self.write_guide_data_cache(content.clone()).unwrap();
-            Ok(content)
         }
     }
 
