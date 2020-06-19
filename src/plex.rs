@@ -14,6 +14,23 @@ pub struct Plex {
     enable_guide_data_cache: bool,
 }
 
+trait Requester {
+    fn get(&self, url: String) -> Result<reqwest::blocking::Response, reqwest::Error>;
+}
+
+impl Requester for Plex {
+    fn get(&self, url: String) -> Result<reqwest::blocking::Response, reqwest::Error> {
+        let result = reqwest::blocking::Client::builder()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .unwrap()
+            .get(&url)
+            .send();
+
+        result
+    }
+}
+
 impl Plex {
     pub fn new(plex_token: String, plex_hostname: String, plex_port: String, guide_data_cache: String, enable_guide_data_cache: bool) -> Plex {
         Plex {
@@ -86,13 +103,7 @@ impl Plex {
     fn get_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
         let request_url = &self.guide_request_url();
         println!("Requesting...");
-        let response = reqwest::blocking::Client::builder()
-            .danger_accept_invalid_certs(true)
-            .build()
-            .unwrap()
-            .get(request_url)
-            .send()
-            .unwrap();
+        let response = &self.get(request_url).unwrap();
 
         let content = Cursor::new(response.text().unwrap());
 
