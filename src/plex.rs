@@ -3,7 +3,8 @@ extern crate reqwest;
 use std::error::Error;
 use std::io::Cursor;
 
-pub struct Plex {
+pub struct Plex<'a, R: Requester> {
+    requester: &'a R,
     plex_token: String,
     plex_hostname: String,
     plex_port: String,
@@ -11,11 +12,13 @@ pub struct Plex {
     enable_guide_data_cache: bool,
 }
 
-trait Requester {
+pub struct PlexRequester {}
+
+pub trait Requester {
     fn get(&self, url: &String) -> Result<String, reqwest::Error>;
 }
 
-impl Requester for Plex {
+impl Requester for PlexRequester {
     fn get(&self, url: &String) -> Result<String, reqwest::Error> {
         let result = reqwest::blocking::Client::builder()
             .danger_accept_invalid_certs(true)
@@ -28,9 +31,20 @@ impl Requester for Plex {
     }
 }
 
-impl Plex {
-    pub fn new(plex_token: String, plex_hostname: String, plex_port: String, guide_data_cache: String, enable_guide_data_cache: bool) -> Plex {
+impl<'a, R> Plex<'a, R>
+  where
+    R: Requester
+  {
+    pub fn new(
+        requester: &R,
+        plex_token: String,
+        plex_hostname: String,
+        plex_port: String,
+        guide_data_cache: String,
+        enable_guide_data_cache: bool
+    ) -> Plex<R> {
         Plex {
+            requester,
             plex_token,
             plex_hostname,
             plex_port,
@@ -62,8 +76,8 @@ impl Plex {
     pub fn get_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
         println!("Requesting...");
 
-        let request_url = &self.guide_request_url();
-        let text = &self.get(request_url).unwrap();
+        let request_url = self.guide_request_url();
+        let text = &self.requester.get(&request_url).unwrap();
         let content = Cursor::new(text.clone());
 
         Ok(content)
@@ -76,7 +90,9 @@ mod tests {
 
     #[test]
     fn test_plex_url() {
+        let plex_requester = PlexRequester{};
         let plex = Plex::new(
+            &plex_requester,
             String::from("1234"),
             String::from("plexbox"),
             String::from("5678"),
@@ -89,19 +105,19 @@ mod tests {
         );
     }
 
-    struct MockRequester {
+    struct MockPlexRequester {
         response_text: String,
     }
 
-    impl MockRequester {
-        fn new(response_text: String) -> MockRequester {
-            MockRequester{
+    impl MockPlexRequester {
+        fn new(response_text: String) -> MockPlexRequester {
+            MockPlexRequester{
                 response_text: response_text,
             }
         }
     }
 
-    impl Requester for  MockRequester {
+    impl Requester for  MockPlexRequester {
         fn get(&self, url: &String) ->  Result<String, reqwest::Error> {
             Ok(self.response_text.clone())
         }
@@ -109,22 +125,36 @@ mod tests {
 
     #[test]
     fn test_get_returns_response() {
-        let mock_requester = MockRequester::new(
+        let mock_plex_requester = MockPlexRequester::new(
             String::from("Hello World!"),
         );
 
-        let result = mock_requester.get(&String::from("http://plexbox.fake.invalid"));
+        let result = mock_plex_requester.get(&String::from("http://plexbox.fake.invalid"));
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), "Hello World!");
     }
 
     #[test]
     fn test_get_guide_data_creates_cursor() {
-        let mock_requester = MockRequester::new(
-            String::from("Hello World!"),
+        let mock_plex_requester = MockPlexRequester::new(
+            String::from("Hello World! This is a fake response!"),
         );
 
-        let result = mock_requester.get(&String::from("http://plexbox.fake.invalid"));
+        let plex = Plex::new(
+            &mock_plex_requester,
+            String::from("1234"),
+            String::from("plexbox"),
+            String::from("5678"),
+            String::from("/fake_path"),
+            false,
+        );
+
+        let result = plex.get_guide_data();
+
         assert!(result.is_ok());
+
+        let content = result.unwrap();
+        let text_ref = content.get_ref();
+        assert_eq!(text_ref, "Hello World! This is a fake response!");
     }
 }

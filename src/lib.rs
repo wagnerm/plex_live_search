@@ -14,7 +14,9 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 fn search(config: Config) -> Result<(), Box<dyn Error>> {
+    let plex_requester = plex::PlexRequester{};
     let plex = plex::Plex::new(
+        &plex_requester,
         config.plex_token,
         config.plex_hostname,
         config.plex_port,
