@@ -75,7 +75,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn plex_url() {
+    fn test_plex_url() {
         let plex = Plex::new(
             String::from("1234"),
             String::from("plexbox"),
@@ -87,5 +87,44 @@ mod tests {
             "https://plexbox:5678/tv.plex.providers.epg.cloud:2/sections/3/all?type=4&X-Plex-Token=1234",
             plex.guide_request_url()
         );
+    }
+
+    struct MockRequester {
+        response_text: String,
+    }
+
+    impl MockRequester {
+        fn new(response_text: String) -> MockRequester {
+            MockRequester{
+                response_text: response_text,
+            }
+        }
+    }
+
+    impl Requester for  MockRequester {
+        fn get(&self, url: &String) ->  Result<String, reqwest::Error> {
+            Ok(self.response_text.clone())
+        }
+    }
+
+    #[test]
+    fn test_get_returns_response() {
+        let mock_requester = MockRequester::new(
+            String::from("Hello World!"),
+        );
+
+        let result = mock_requester.get(&String::from("http://plexbox.fake.invalid"));
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "Hello World!");
+    }
+
+    #[test]
+    fn test_get_guide_data_creates_cursor() {
+        let mock_requester = MockRequester::new(
+            String::from("Hello World!"),
+        );
+
+        let result = mock_requester.get(&String::from("http://plexbox.fake.invalid"));
+        assert!(result.is_ok());
     }
 }
