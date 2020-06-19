@@ -12,19 +12,19 @@ pub struct Plex {
 }
 
 trait Requester {
-    fn get(&self, url: String) -> Result<reqwest::blocking::Response, reqwest::Error>;
+    fn get(&self, url: &String) -> Result<String, reqwest::Error>;
 }
 
 impl Requester for Plex {
-    fn get(&self, url: String) -> Result<reqwest::blocking::Response, reqwest::Error> {
+    fn get(&self, url: &String) -> Result<String, reqwest::Error> {
         let result = reqwest::blocking::Client::builder()
             .danger_accept_invalid_certs(true)
             .build()
             .unwrap()
-            .get(&url)
-            .send();
+            .get(url)
+            .send()?;
 
-        result
+        result.text()
     }
 }
 
@@ -59,12 +59,12 @@ impl Plex {
         )
     }
 
-    fn get_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
-        let request_url = &self.guide_request_url();
+    pub fn get_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
         println!("Requesting...");
-        let response = &self.get(request_url).unwrap();
 
-        let content = Cursor::new(response.text().unwrap());
+        let request_url = &self.guide_request_url();
+        let text = &self.get(request_url).unwrap();
+        let content = Cursor::new(text.clone());
 
         Ok(content)
     }
