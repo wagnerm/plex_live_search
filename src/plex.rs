@@ -9,7 +9,6 @@ pub struct Plex<'a, R: Requester> {
     plex_port: String,
     guide_data_cache: String,
     enable_guide_data_cache: bool,
-    category: i32,
 }
 
 pub struct PlexRequester {}
@@ -48,7 +47,6 @@ where
         plex_port: String,
         guide_data_cache: String,
         enable_guide_data_cache: bool,
-        category: i32,
     ) -> Plex<R> {
         Plex {
             requester,
@@ -57,15 +55,14 @@ where
             plex_port,
             guide_data_cache,
             enable_guide_data_cache,
-            category,
         }
     }
 
-    fn guide_request_url(&self) -> String {
+    fn guide_request_url(&self, category: i32) -> String {
         // TODO more sections
         // section 3 == sports
         // section 2 == shows
-        let request_path = "tv.plex.providers.epg.cloud:2/sections/4/all";
+        let request_path = format!("tv.plex.providers.epg.cloud:2/sections/{category}/all", category = category);
 
         // Describes the metadata we will get back from Plex.
         // 4 for video metadata, media metadata, and genre.
@@ -84,7 +81,7 @@ where
     pub fn get_guide_data(&self, category: i32) -> Result<String, Box<dyn Error>> {
         println!("Requesting...");
 
-        let request_url = self.guide_request_url();
+        let request_url = self.guide_request_url(category);
         println!("{}", request_url);
         let text = &self.requester.get(&request_url)?;
         // let content = Cursor::new(text.clone());

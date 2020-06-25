@@ -33,7 +33,6 @@ fn search(config: Config) -> Result<(), Box<dyn Error>> {
         config.plex_port,
         config.plex_guide_data_cache,
         config.plex_enable_guide_data_cache,
-        3,
     );
 
     let categories = content_category_ids(config.category);
