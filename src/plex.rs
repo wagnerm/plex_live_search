@@ -3,6 +3,8 @@ extern crate reqwest;
 use std::error::Error;
 use std::io::Cursor;
 
+use super::config::ContentCategory;
+
 pub struct Plex<'a, R: Requester> {
     requester: &'a R,
     plex_token: String,
@@ -10,6 +12,7 @@ pub struct Plex<'a, R: Requester> {
     plex_port: String,
     guide_data_cache: String,
     enable_guide_data_cache: bool,
+    category: ContentCategory,
 }
 
 pub struct PlexRequester {}
@@ -48,6 +51,7 @@ where
         plex_port: String,
         guide_data_cache: String,
         enable_guide_data_cache: bool,
+        category: ContentCategory,
     ) -> Plex<R> {
         Plex {
             requester,
@@ -56,14 +60,26 @@ where
             plex_port,
             guide_data_cache,
             enable_guide_data_cache,
+            category,
+        }
+    }
+
+    fn content_category_ids(&self) -> Vec<i32> {
+        match &self.category {
+            ContentCategory::all => vec![2, 3, 4],
+            ContentCategory::shows => vec![2],
+            ContentCategory::sports => vec![3],
+            ContentCategory::news => vec![4],
         }
     }
 
     fn guide_request_url(&self) -> String {
+        let ids = self.content_category_ids();
+
         // TODO more sections
         // section 3 == sports
         // section 2 == shows
-        let request_path = "tv.plex.providers.epg.cloud:2/sections/3/all";
+        let request_path = "tv.plex.providers.epg.cloud:2/sections/4/all";
 
         // Describes the metadata we will get back from Plex.
         // 4 for video metadata, media metadata, and genre.
@@ -83,6 +99,7 @@ where
         println!("Requesting...");
 
         let request_url = self.guide_request_url();
+        println!("{}", request_url);
         let text = &self.requester.get(&request_url)?;
         let content = Cursor::new(text.clone());
 
