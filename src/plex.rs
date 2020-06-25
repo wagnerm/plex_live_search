@@ -1,9 +1,6 @@
 extern crate reqwest;
 
 use std::error::Error;
-use std::io::Cursor;
-
-use super::config::ContentCategory;
 
 pub struct Plex<'a, R: Requester> {
     requester: &'a R,
@@ -12,7 +9,7 @@ pub struct Plex<'a, R: Requester> {
     plex_port: String,
     guide_data_cache: String,
     enable_guide_data_cache: bool,
-    category: ContentCategory,
+    category: i32,
 }
 
 pub struct PlexRequester {}
@@ -51,7 +48,7 @@ where
         plex_port: String,
         guide_data_cache: String,
         enable_guide_data_cache: bool,
-        category: ContentCategory,
+        category: i32,
     ) -> Plex<R> {
         Plex {
             requester,
@@ -64,18 +61,7 @@ where
         }
     }
 
-    fn content_category_ids(&self) -> Vec<i32> {
-        match &self.category {
-            ContentCategory::all => vec![2, 3, 4],
-            ContentCategory::shows => vec![2],
-            ContentCategory::sports => vec![3],
-            ContentCategory::news => vec![4],
-        }
-    }
-
     fn guide_request_url(&self) -> String {
-        let ids = self.content_category_ids();
-
         // TODO more sections
         // section 3 == sports
         // section 2 == shows
@@ -95,15 +81,15 @@ where
         )
     }
 
-    pub fn get_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
+    pub fn get_guide_data(&self, category: i32) -> Result<String, Box<dyn Error>> {
         println!("Requesting...");
 
         let request_url = self.guide_request_url();
         println!("{}", request_url);
         let text = &self.requester.get(&request_url)?;
-        let content = Cursor::new(text.clone());
+        // let content = Cursor::new(text.clone());
 
-        Ok(content)
+        Ok(text.clone())
     }
 }
 
