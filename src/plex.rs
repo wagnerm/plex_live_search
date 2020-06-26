@@ -1,7 +1,6 @@
 extern crate reqwest;
 
 use std::error::Error;
-use std::io::Cursor;
 
 pub struct Plex<'a, R: Requester> {
     requester: &'a R,
@@ -59,11 +58,14 @@ where
         }
     }
 
-    fn guide_request_url(&self) -> String {
+    fn guide_request_url(&self, category: i32) -> String {
         // TODO more sections
         // section 3 == sports
         // section 2 == shows
-        let request_path = "tv.plex.providers.epg.cloud:2/sections/3/all";
+        let request_path = format!(
+            "tv.plex.providers.epg.cloud:2/sections/{category}/all",
+            category = category
+        );
 
         // Describes the metadata we will get back from Plex.
         // 4 for video metadata, media metadata, and genre.
@@ -79,14 +81,15 @@ where
         )
     }
 
-    pub fn get_guide_data(&self) -> Result<Cursor<String>, Box<dyn Error>> {
+    pub fn get_guide_data(&self, category: i32) -> Result<String, Box<dyn Error>> {
         println!("Requesting...");
 
-        let request_url = self.guide_request_url();
+        let request_url = self.guide_request_url(category);
+        println!("{}", request_url);
         let text = &self.requester.get(&request_url)?;
-        let content = Cursor::new(text.clone());
+        // let content = Cursor::new(text.clone());
 
-        Ok(content)
+        Ok(text.clone())
     }
 }
 
@@ -161,7 +164,7 @@ mod tests {
         );
         assert_eq!(
             "https://plexbox:5678/tv.plex.providers.epg.cloud:2/sections/3/all?type=4&X-Plex-Token=1234",
-            plex.guide_request_url()
+            plex.guide_request_url(3)
         );
     }
 
@@ -188,13 +191,12 @@ mod tests {
             false,
         );
 
-        let result = plex.get_guide_data();
+        let result = plex.get_guide_data(3);
 
         assert!(result.is_ok());
 
         let content = result.unwrap();
-        let text_ref = content.get_ref();
-        assert_eq!(text_ref, "Hello World! This is a fake response!");
+        assert_eq!(content, "Hello World! This is a fake response!");
     }
 
     #[test]
@@ -210,7 +212,7 @@ mod tests {
             false,
         );
 
-        let result = plex.get_guide_data();
+        let result = plex.get_guide_data(3);
         assert!(result.is_err());
     }
 }
