@@ -1,4 +1,16 @@
+use clap::arg_enum;
 use structopt::StructOpt;
+
+arg_enum!{
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
+    pub enum ContentCategory {
+        all,
+        sports,
+        shows,
+        news,
+    }
+}
 
 #[derive(StructOpt)]
 pub struct Config {
@@ -25,4 +37,7 @@ pub struct Config {
 
     #[structopt(long, env = "PLEX_ENABLE_GUIDE_DATA_CACHE")]
     pub plex_enable_guide_data_cache: bool,
+
+    #[structopt(long, possible_values = &ContentCategory::variants(), case_insensitive = true, default_value = "all")]
+    pub category: ContentCategory,
 }

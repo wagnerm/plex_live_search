@@ -10,4 +10,5 @@ edition = "2018"
 reqwest = { version = "0.10.4", features = ["blocking"] }
 xml-rs = "0.8.3"
 chrono = "0.4.11"
+clap = "2.33.1"
 structopt = "0.3.13"
