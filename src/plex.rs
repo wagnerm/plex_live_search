@@ -63,7 +63,7 @@ where
         // section 3 == sports
         // section 2 == shows
         let request_path = format!(
-            "tv.plex.providers.epg.cloud:2/sections/{category}/all",
+            "tv.plex.providers.epg.cloud:6/sections/{category}/all",
             category = category
         );
 
